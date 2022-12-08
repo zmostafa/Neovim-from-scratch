@@ -94,6 +94,15 @@ return packer.startup(function(use)
   
   -- Markdown Preview
   use({"iamcco/markdown-preview.nvim",run = function() vim.fn["mkdp#util#install"]() end,})
+  
+  -- ALE for linting 
+  -- use {
+  --  'w0rp/ale',
+  --  ft = {'sh', 'zsh', 'bash', 'c', 'cpp', 'cmake', 'html', 'markdown', 'racket', 'vim', 'tex'},
+  --  cmd = 'ALEEnable',
+  --  config = 'vim.cmd[[ALEEnable]]'
+  --}
+
 	-- Automatically set up your configuration after cloning packer.nvim
 	-- Put this at the end after all plugins
 	if PACKER_BOOTSTRAP then
