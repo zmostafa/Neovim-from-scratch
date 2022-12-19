@@ -104,6 +104,12 @@ return packer.startup(function(use)
   --  config = 'vim.cmd[[ALEEnable]]'
   --}
 
+  -- Install Harpoon for file navigation
+  -- use('theprimeagen/harpoon')
+
+  -- Install undo tree
+  -- use('mbbill/undotree')
+
 	-- Automatically set up your configuration after cloning packer.nvim
 	-- Put this at the end after all plugins
 	if PACKER_BOOTSTRAP then
