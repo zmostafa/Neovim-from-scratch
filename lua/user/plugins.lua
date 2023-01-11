@@ -113,6 +113,9 @@ return packer.startup(function(use)
   -- Install cphelper for competitive programming 
   use {"p00f/cphelper.nvim"}
 
+  -- Install inlay_hints
+  use {"lvimuser/lsp-inlayhints.nvim"}
+
   -- Automatically set up your configuration after cloning packer.nvim
 	-- Put this at the end after all plugins
 	if PACKER_BOOTSTRAP then
