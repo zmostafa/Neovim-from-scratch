@@ -110,7 +110,10 @@ return packer.startup(function(use)
   -- Install undo tree
   -- use('mbbill/undotree')
 
-	-- Automatically set up your configuration after cloning packer.nvim
+  -- Install cphelper for competitive programming 
+  use {"p00f/cphelper.nvim"}
+
+  -- Automatically set up your configuration after cloning packer.nvim
 	-- Put this at the end after all plugins
 	if PACKER_BOOTSTRAP then
 		require("packer").sync()
