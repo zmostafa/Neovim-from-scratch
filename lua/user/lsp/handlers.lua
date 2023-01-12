@@ -91,7 +91,7 @@ M.on_attach = function(client, bufnr)
   if not inlayHints_ok then
     return
   end
-  -- inlayHints.setup()
+  inlayHints.setup()
   inlayHints.on_attach(client, bufnr)
 
 end
