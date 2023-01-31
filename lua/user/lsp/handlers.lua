@@ -94,6 +94,12 @@ M.on_attach = function(client, bufnr)
   inlayHints.setup()
   inlayHints.on_attach(client, bufnr)
 
+  -- local clangd_extension_ok, clangd_extension = pcall(require, "clangd_extensions")
+  -- if not clangd_extension_ok then
+  --   return
+  -- end
+  -- clangd_extension.setup()
+
 end
 
 return M
