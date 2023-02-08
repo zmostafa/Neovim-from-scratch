@@ -8,6 +8,7 @@ local servers = {
 	"pyright",
 	-- "bashls",
 	"jsonls",
+  "cmake",
 	-- "yamlls",
 }
 
