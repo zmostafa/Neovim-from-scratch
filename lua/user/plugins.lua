@@ -121,13 +121,21 @@ return packer.startup(function(use)
   use { "lvimuser/lsp-inlayhints.nvim" }
 
   -- Install debugger --> Still missing keymaps and configurations
-  -- use { "mfussenegger/nvim-dap" }
-  -- use { "rcarriga/nvim-dap-ui", requires = { "mfussenegger/nvim-dap" } }
-  -- doxygen generator 
+  use { "mfussenegger/nvim-dap" }
+  use { "rcarriga/nvim-dap-ui", requires = { "mfussenegger/nvim-dap" } }
+
+  -- Install Bazel plugins
+  use { 'google/vim-maktaba' }
+  use { 'bazelbuild/vim-bazel' }
+  use { 'alexander-born/bazel-vim', config = function() require 'user.bazel'.setup() end }
+  use {'alexander-born/cmp-bazel'}
+
+  -- doxygen generator
   use { "danymat/neogen" }
 
   -- Install orgmode for note taking
-  use {'nvim-orgmode/orgmode'}
+  use { 'nvim-orgmode/orgmode' }
+
   -- Automatically set up your configuration after cloning packer.nvim
   -- Put this at the end after all plugins
   if PACKER_BOOTSTRAP then

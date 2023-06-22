@@ -115,6 +115,7 @@ cmp.setup {
     { name = "luasnip" },
     { name = "buffer" },
     { name = "path" },
+    { name = "bazel" },
     { name = "orgmode" },
   },
   confirm_opts = {
