@@ -127,14 +127,17 @@ return packer.startup(function(use)
   -- Install Bazel plugins
   use { 'google/vim-maktaba' }
   use { 'bazelbuild/vim-bazel' }
-  use { 'alexander-born/bazel-vim', config = function() require 'user.bazel'.setup() end }
-  use {'alexander-born/cmp-bazel'}
+  use { 'alexander-born/bazel-vim' }
+  use { 'alexander-born/cmp-bazel' }
 
   -- doxygen generator
   use { "danymat/neogen" }
 
   -- Install orgmode for note taking
   use { 'nvim-orgmode/orgmode' }
+
+  -- Install git-worktree
+  -- use {"ThePrimeagen/git-worktree.nvim"}
 
   -- Automatically set up your configuration after cloning packer.nvim
   -- Put this at the end after all plugins

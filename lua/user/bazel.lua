@@ -6,52 +6,66 @@ end
 
 local M = {}
 
+local function BufDir()
+  local bufnr = vim.fn.bufnr()
+  return vim.fn.expand(("#%d:p:h"):format(bufnr))
+end
+
+local function Split(s, delimiter)
+  local result = {}
+  for match in (s .. delimiter):gmatch("(.-)" .. delimiter) do
+    table.insert(result, match)
+  end
+  return result
+end
+
 local function StartDebugger(type, program, args, cwd, env, workspace)
-  require 'dap'.run({
+  require("dap").run({
     name = "Launch",
     type = type,
     request = "launch",
-    program = function() return program end,
+    program = function()
+      return program
+    end,
     env = env,
     args = args,
     cwd = cwd,
     runInTerminal = false,
     stopOnEntry = false,
     setupCommands = { { text = "-enable-pretty-printing", ignoreFailures = true } },
-    sourceFileMap = { ["/proc/self/cwd"] = workspace },
+    -- sourceFileMap = { ["/proc/self/cwd"] = workspace },
   })
 end
 
 function M.YankLabel()
   local label = vim.fn.GetLabel()
-  print('yanking ' .. label .. ' to + and " register')
-  vim.fn.setreg('+', label)
+  print("yanking " .. label .. ' to + and " register')
+  vim.fn.setreg("+", label)
   vim.fn.setreg('"', label)
 end
 
-local function get_python_imports(program)
-  local command = "grep 'python_imports =' " .. program .. [[ | sed "s|.*'\(.*\)'|\1|"]]
+local function get_python_imports(bazel_info)
+  local command = "grep 'python_imports =' " .. bazel_info.executable .. [[ | sed "s|.*'\(.*\)'|\1|"]]
   return vim.fn.trim(vim.fn.system(command))
 end
 
-local function get_python_test_executable(bazel_info)
-  local command = [[grep -oP "rel_path = '.*'" ]] ..
-      bazel_info.executable .. [[ | grep -o "'.*'" | tail -c +2 | head -c -2]]
+local function get_python_executable(bazel_info)
+  local command = [[grep -oP "rel_path = '.*'" ]]
+      .. bazel_info.executable
+      .. [[ | grep -o "'.*'" | tail -c +2 | head -c -2]]
   return bazel_info.runfiles .. "/" .. vim.fn.trim(vim.fn.system(command))
 end
 
-local function get_bazel_python_modules(program)
-  local runfiles = program .. ".runfiles"
-  local extra_paths = { runfiles, BufDir(), runfiles .. '/' .. bazel.get_workspace_name() }
-  local imports = Split(get_python_imports(program), ':')
+local function get_bazel_python_modules(bazel_info)
+  local imports = Split(get_python_imports(bazel_info), ":")
+  local extra_paths = { bazel_info.runfiles .. "/" .. bazel_info.workspace_name }
   for _, import in pairs(imports) do
-    table.insert(extra_paths, runfiles .. '/' .. import)
+    table.insert(extra_paths, bazel_info.runfiles .. "/" .. import)
   end
   return extra_paths
 end
 
-local function get_python_path(program)
-  local extra_paths = get_bazel_python_modules(program)
+local function construct_python_path(extra_paths)
   local env = ""
   local sep = ""
   for _, extra_path in pairs(extra_paths) do
@@ -61,41 +75,56 @@ local function get_python_path(program)
   return env
 end
 
-local function setup_pyright(extra_paths)
-  local config = { capabilities = require 'config.lsp'.get_capabilities() }
-  config.settings = { python = { analysis = { extraPaths = extra_paths } } }
-  require('lspconfig')['pyright'].setup(config)
+local function get_python_path(bazel_info)
+  local extra_paths = get_bazel_python_modules(bazel_info)
+  return construct_python_path(extra_paths)
 end
 
-local function add_python_deps_to_pyright(target, workspace)
-  local query = "bazel cquery " ..
-      vim.g.bazel_config ..
-      " '" .. target .. "' --output starlark --starlark:expr='providers(target)[\"PyInfo\"].imports'"
+local function save_pyright_config_json(extra_paths, include)
+  local config = { typeCheckingMode = "off", extraPaths = extra_paths, include = include }
+  local json = { vim.fn.json_encode(config) }
+  vim.fn.writefile(json, "pyrightconfig.json")
+  print("Created pyrightconfig.json")
+end
 
-  local ws_name = bazel.get_workspace_name(workspace)
-  local function parse_and_add_extra_path(_, stdout)
-    local extra_paths = { workspace }
-    local query_output = stdout[1]
-    local depset = query_output:match("depset%(%[(.*)%]")
-    if depset == nil then return end
-    for extra_path in depset:gmatch('"(.-)"') do
-      if extra_path:match("^" .. ws_name) then
-        local path = extra_path:gsub("^" .. ws_name, workspace .. "/bazel-bin")
-        table.insert(extra_paths, path)
-      else
-        table.insert(extra_paths, workspace .. "/external/" .. extra_path)
+local function get_keys(t)
+  local keys = {}
+  for key, _ in pairs(t) do
+    table.insert(keys, key)
+  end
+  return keys
+end
+
+function M.create_pyright_config(target, include)
+  local on_success = function(bazel_info)
+    local Path = require("plenary.path")
+    local extra_paths = {}
+    local ws_name = bazel_info.workspace_name
+    local workspace = bazel_info.workspace
+    for _, line in pairs(bazel_info.stdout) do
+      local depset = line:match("depset%(%[(.*)%]") or ""
+      for extra_path in depset:gmatch('"(.-)"') do
+        if extra_path:match("^" .. ws_name) then
+          for _, pattern in pairs({ workspace, workspace .. "/bazel-bin" }) do
+            local path = extra_path:gsub("^" .. ws_name, pattern)
+            if Path:new(path):is_dir() then
+              extra_paths[path] = true
+            end
+          end
+        else
+          extra_paths[workspace .. "/external/" .. extra_path] = true
+        end
       end
     end
-    setup_pyright(extra_paths)
+    save_pyright_config_json(get_keys(extra_paths), include)
   end
-
-  vim.fn.jobstart(query, { on_stdout = parse_and_add_extra_path })
-end
-
-function M.setup_pyright_with_bazel_for_this_target()
-  local workspace = bazel.get_workspace()
-  vim.fn.BazelGetCurrentBufTarget()
-  add_python_deps_to_pyright(vim.g.current_bazel_target, workspace)
+  bazel.cquery(
+    vim.g.bazel_config
+    .. " 'kind(py_.*,"
+    .. target
+    .. ")' --output starlark --starlark:expr 'providers(target)[\"PyInfo\"].imports'",
+    { on_success = on_success }
+  )
 end
 
 function M.DebugBazel(type, bazel_config, get_program, args, get_env)
@@ -103,39 +132,43 @@ function M.DebugBazel(type, bazel_config, get_program, args, get_env)
     local cwd = bazel_info.runfiles .. "/" .. bazel_info.workspace_name
     StartDebugger(type, get_program(bazel_info), args, cwd, get_env(bazel_info), bazel_info.workspace)
   end
-  bazel.run_here('build', bazel_config, { on_success = start_debugger })
+  bazel.run_here("build", bazel_config, { on_success = start_debugger })
 end
 
-function M.DebugBazelPy(get_program)
-  local args = vim.g.python_debug_args or { "" }
+function M.DebugBazelPy(args)
   local get_env = function(bazel_info)
     return {
-      PYTHONPATH = get_python_path(bazel_info.executable),
-      RUNFILES_DIR = bazel_info.runfiles
+      PYTHONPATH = get_python_path(bazel_info),
+      RUNFILES_DIR = bazel_info.runfiles,
     }
   end
-  M.DebugBazel("python", vim.g.bazel_config, get_program, args, get_env)
+  M.DebugBazel("python", vim.g.bazel_config, get_python_executable, args, get_env)
 end
 
-function M.DebugPythonBinary()
-  M.DebugBazelPy(function(_) return "${file}" end)
+function M.DebugBazelPyRun()
+  M.DebugBazelPy(vim.g.debug_args or {})
 end
 
-function M.DebugPytest()
-  M.DebugBazelPy(function(bazel_info) return get_python_test_executable(bazel_info) end)
+function M.DebugBazelPyTest()
+  M.DebugBazelPy(require("bazel.pytest").get_test_filter_args())
 end
 
-local function default_program(bazel_info) return bazel_info.executable end
-local function default_env(_) return {} end
+local function default_program(bazel_info)
+  return bazel_info.executable
+end
+
+local function default_env(_)
+  return {}
+end
 
 function M.DebugGTest()
-  local args = { '--gtest_filter=' .. bazel.get_gtest_filter() }
+  local args = require("bazel.gtest").get_gtest_filter_args()
   M.DebugBazel("cppdbg", vim.g.bazel_config .. " --compilation_mode dbg --copt -O0", default_program, args, default_env)
 end
 
 function M.DebugTest()
   if vim.bo.filetype == "python" then
-    M.DebugPytest()
+    M.DebugBazelPyTest()
   elseif vim.bo.filetype == "cpp" then
     M.DebugGTest()
   else
@@ -145,75 +178,30 @@ end
 
 function M.DebugRun()
   if vim.bo.filetype == "python" then
-    M.DebugPythonBinary()
+    M.DebugBazelPyRun()
   else
-    M.DebugBazel("cppdbg", vim.g.bazel_config .. " --compilation_mode dbg --copt=-O0", default_program, {}, default_env)
+    local args = vim.g.debug_args or {}
+    M.DebugBazel(
+      "cppdbg",
+      vim.g.bazel_config .. " --compilation_mode dbg --copt=-O0",
+      default_program,
+      args,
+      default_env
+    )
   end
 end
 
-function M.root_dir(default_root_dir)
-  return function(fname)
-    if bazel.is_bazel_cache(fname) then
-      return bazel.get_workspace_from_cache(fname)
-    elseif bazel.is_bazel_workspace(fname) then
-      return bazel.get_workspace(fname)
-    end
-
-    return default_root_dir(fname)
+local function split_by_space(input)
+  local chunks = {}
+  for substring in input:gmatch("%S+") do
+    table.insert(chunks, substring)
   end
+  return chunks
 end
 
-function M.setup()
-  -- Info: to make tab completion work copy '/etc/bash_completion.d/bazel-complete.bash' to '/etc/bash_completion.d/bazel'
-
-  vim.g.bazel_config = vim.g.bazel_config or ''
-
-  vim.cmd [[
-    set errorformat=ERROR:\ %f:%l:%c:%m
-    set errorformat+=%f:%l:%c:%m
-    set errorformat+=[\ \ FAILED\ \ ]\ %m\ (%.%#
-
-    " Ignore build output lines starting with INFO:, Loading:, or [
-    set errorformat+=%-GINFO:\ %.%#
-    set errorformat+=%-GLoading:\ %.%#
-    set errorformat+=%-G[%.%#
-
-    " Errorformat settings
-    " * errorformat reference: http://vimdoc.sourceforge.net/htmldoc/quickfix.html#errorformat
-    " * look for message without consuming: https://stackoverflow.com/a/36959245/10923940
-    " * errorformat explanation: https://stackoverflow.com/a/29102995/10923940
-
-    " Ignore this error message, it is always redundant
-    " ERROR: <filename>:<line>:<col>: C++ compilation of rule '<target>' failed (Exit 1)
-     set errorformat+=%-GERROR:\ %f:%l:%c:\ C++\ compilation\ of\ rule\ %m
-     set errorformat+=%tRROR:\ %f:%l:%c:\ %m   " Generic bazel error handler
-     set errorformat+=%tARNING:\ %f:%l:%c:\ %m " Generic bazel warning handler
-    " this rule is missing dependency declarations for the following files included by '<another-filename>'
-    "   '<fname-1>'
-    "   '<fname-2>'
-    "   ...
-     set errorformat+=%Ethis\ rule\ is\ %m\ the\ following\ files\ included\ by\ \'%f\':
-     set errorformat+=%C\ \ \'%m\'
-     set errorformat+=%Z
-
-    " Test failures
-     set errorformat+=FAIL:\ %m\ (see\ %f)            " FAIL: <test-target> (see <test-log>)
-
-    " test failures in async builds
-     set errorformat+=%E%*[\ ]FAILED\ in%m
-     set errorformat+=%C\ \ %f
-     set errorformat+=%Z
-
-    " Errors in the build stage
-     set errorformat+=%f:%l:%c:\ fatal\ %trror:\ %m         " <filename>:<line>:<col>: fatal error: <message>
-     set errorformat+=%f:%l:%c:\ %trror:\ %m                " <filename>:<line>:<col>: error: <message>
-     set errorformat+=%f:%l:%c:\ %tarning:\ %m              " <filename>:<line>:<col>: warning: <message>
-     set errorformat+=%f:%l:%c:\ note:\ %m                  " <filename>:<line>:<col>: note: <message>
-     set errorformat+=%f:%l:%c:\ \ \ requ%tred\ from\ here  " <filename>:<line>:<col>: <message>
-     set errorformat+=%f(%l):\ %tarning:\ %m                " <filename>(<line>): warning: <message>
-     set errorformat+=%f:%l:%c:\ %m                         " <filename>:<line>:<col>: <message>
-     set errorformat+=%f:%l:\ %m                            " <filename>:<line>: <message>
-     ]]
+function M.set_debug_args_from_input()
+  local args = vim.fn.input("args for debugging with bazel: ")
+  vim.g.debug_args = split_by_space(args)
 end
 
 return M
