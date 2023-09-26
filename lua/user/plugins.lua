@@ -136,6 +136,9 @@ return packer.startup(function(use)
   -- Install orgmode for note taking
   use { 'nvim-orgmode/orgmode' }
 
+  -- Instll aerial for C/C++ tags browsing 
+  use {'stevearc/aerial.nvim'}
+
   -- Install git-worktree
   -- use {"ThePrimeagen/git-worktree.nvim"}
 
