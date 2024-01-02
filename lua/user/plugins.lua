@@ -125,10 +125,10 @@ return packer.startup(function(use)
   use { "rcarriga/nvim-dap-ui", requires = { "mfussenegger/nvim-dap" } }
 
   -- Install Bazel plugins
-  use { 'google/vim-maktaba' }
-  use { 'bazelbuild/vim-bazel' }
-  use { 'alexander-born/bazel-vim' }
-  use { 'alexander-born/cmp-bazel' }
+  -- use { 'google/vim-maktaba' }
+  -- use { 'bazelbuild/vim-bazel' }
+  -- use { 'alexander-born/bazel-vim' }
+  -- use { 'alexander-born/cmp-bazel' }
 
   -- doxygen generator
   use { "danymat/neogen" }
@@ -142,6 +142,57 @@ return packer.startup(function(use)
   -- Install git-worktree
   -- use {"ThePrimeagen/git-worktree.nvim"}
 
+  -- setup for notify is not complete
+  use {'rcarriga/nvim-notify'}
+
+  use {
+  "epwalsh/pomo.nvim",
+  tag = "*",  -- Recommended, use latest release instead of latest commit
+  requires = {
+    -- Optional, but highly recommended if you want to use the "Default" timer
+    "rcarriga/nvim-notify",
+  }}
+
+  use {
+  "folke/noice.nvim",
+  tag = "*",  -- Recommended, use latest release instead of latest commit
+  requires = {
+    -- Optional, but highly recommended if you want to use the "Default" timer
+    "rcarriga/nvim-notify","MunifTanjim/nui.nvim",
+  }}
+
+use {'rmagatti/goto-preview'}
+  -- LLM gen model config is not complete
+use {'David-Kunz/gen.nvim'}
+
+  -- install Zen-mode plugin https://github.com/folke/zen-mode.nvim
+
+--   use({
+--   "epwalsh/obsidian.nvim",
+--   tag = "*",  -- recommended, use latest release instead of latest commit
+--   requires = {
+--     -- Required.
+--     "nvim-lua/plenary.nvim",
+--
+--     -- see below for full list of optional dependencies 👇
+--   },
+--   config = function()
+--     require("obsidian").setup({
+--       workspaces = {
+--         {
+--           name = "personal",
+--           path = "~/vaults/personal",
+--         },
+--         {
+--           name = "work",
+--           path = "~/vaults/work",
+--         },
+--       },
+--
+--       -- see below for full list of options 👇
+--     })
+--   end,
+-- })
   -- Automatically set up your configuration after cloning packer.nvim
   -- Put this at the end after all plugins
   if PACKER_BOOTSTRAP then
