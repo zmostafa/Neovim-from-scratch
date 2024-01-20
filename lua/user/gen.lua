@@ -19,6 +19,7 @@ local opts = {
         list_models = '<omitted lua function>', -- Retrieves a list of model names
         debug = false -- Prints errors and the command which is run.
     }
+
 gen.setup ({
         model = "mistral", -- The default model to use.
         display_mode = "float", -- The display mode. Can be "float" or "split".
@@ -36,3 +37,8 @@ gen.setup ({
         debug = false
 }
 )-- Prints errors and the command which is run.
+
+gen.prompts['Dazel me!'] = {
+  prompt = "You are a Senior Embdded Software engineer working in automotive industry and acting as an assistant. You offer help with embedded systems technologies, C++, Python and  automotive technologies like CAN, Ethernet and QNX. You answer with code examples when possible. $input:\n$test",
+  replace = true
+}
