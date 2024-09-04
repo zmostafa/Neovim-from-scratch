@@ -136,7 +136,7 @@ return packer.startup(function(use)
 	use({ "danymat/neogen" })
 
 	-- Install orgmode for note taking
-	use({ "nvim-orgmode/orgmode" })
+	-- use({ "nvim-orgmode/orgmode" })
 
 	-- Instll aerial for C/C++ tags browsing
 	use({ "stevearc/aerial.nvim" })
@@ -206,6 +206,7 @@ return packer.startup(function(use)
 	-- })
 	-- Automatically set up your configuration after cloning packer.nvim
 	-- Put this at the end after all plugins
+  use {'mistricky/codesnap.nvim', run = 'make'}
 	if PACKER_BOOTSTRAP then
 		require("packer").sync()
 	end
