@@ -175,6 +175,9 @@ return packer.startup(function(use)
 	-- Git related plugins
 	use({ "tpope/vim-fugitive" })
 
+	-- Enable smartyank
+	use({ "ibhagwan/smartyank.nvim"})
+
 	--   use({
 	--   "epwalsh/obsidian.nvim",
 	--   tag = "*",  -- recommended, use latest release instead of latest commit
