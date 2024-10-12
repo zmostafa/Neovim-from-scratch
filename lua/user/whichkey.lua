@@ -172,6 +172,15 @@ local mappings = {
     C = { "<cmd>Telescope commands<cr>", "Commands" },
   },
 
+  d = {
+    name = "Debug",
+    t = { "<cmd>DapUiToggle<cr>", "Toggle UI" },
+    b = { "<cmd>DapToggleBreakpoint<cr>", "Toggle Breakpoint" },
+    c = { "<cmd>DapContinue<cr>", "Continue" },
+    r = { "<cmd>lua require('dapui').open({reset = true})<cr>", "Debugger Reset" },
+    -- ht = { "<cmd>Telescope oldfiles<cr>", "Open Recent File" },
+  },
+
   t = {
     name = "Terminal",
     n = { "<cmd>lua _NODE_TOGGLE()<cr>", "Node" },
