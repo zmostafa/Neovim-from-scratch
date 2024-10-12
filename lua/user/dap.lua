@@ -35,7 +35,7 @@ dap.adapters.codelldb = {
   port = "${port}",
   executable = {
     -- CHANGE THIS to your path!
-    command = '/Users/ziadmostafa/Downloads/codelldb-darwin-arm64/extension/adapter/codelldb',
+    command = '/home/zmostafa/Downloads/codelldb-darwin-x64/extension/adapter/codelldb',
     args = {"--port", "${port}"},
 
     -- On windows you may have to uncomment this:

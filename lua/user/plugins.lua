@@ -45,15 +45,15 @@ return packer.startup(function(use)
 	use({ "windwp/nvim-autopairs" }) -- Autopairs, integrates with both cmp and treesitter
 	use({ "numToStr/Comment.nvim" })
 	use({ "JoosepAlviste/nvim-ts-context-commentstring" })
-	use({ "kyazdani42/nvim-web-devicons" })
-	use({ "kyazdani42/nvim-tree.lua" })
+	use({ "nvim-tree/nvim-web-devicons" })
+	use({ "nvim-tree/nvim-tree.lua" })
 	use({ "akinsho/bufferline.nvim" })
 	use({ "moll/vim-bbye" })
 	use({ "nvim-lualine/lualine.nvim" })
 	use({ "akinsho/toggleterm.nvim" })
 	use({ "ahmedkhalf/project.nvim" })
 	use({ "lewis6991/impatient.nvim" })
-	use({ "lukas-reineke/indent-blankline.nvim" })
+	use({ "lukas-reineke/indent-blankline.nvim", main = "ibl", opts = {} })
 	use({ "goolord/alpha-nvim" })
 	use({ "folke/which-key.nvim" })
 
@@ -86,7 +86,7 @@ return packer.startup(function(use)
 
 	-- Treesitter
 	use({
-		"nvim-treesitter/nvim-treesitter"
+		"nvim-treesitter/nvim-treesitter",
 	})
 
 	-- Git
@@ -145,7 +145,7 @@ return packer.startup(function(use)
 	-- use {"ThePrimeagen/git-worktree.nvim"}
 
 	-- setup for notify is not complete
-	-- use({ "rcarriga/nvim-notify" })
+	use({ "rcarriga/nvim-notify" })
 
 	-- use({
 	--	"epwalsh/pomo.nvim",
@@ -156,15 +156,15 @@ return packer.startup(function(use)
 	--	},
 	-- })
 
-	-- use({
-	--	"folke/noice.nvim",
-	--	tag = "*", -- Recommended, use latest release instead of latest commit
-	--	requires = {
+	use({
+		"folke/noice.nvim",
+		tag = "*", -- Recommended, use latest release instead of latest commit
+		requires = {
 			-- Optional, but highly recommended if you want to use the "Default" timer
-		--	"rcarriga/nvim-notify",
-	--		"MunifTanjim/nui.nvim",
-	--	},
-	-- })
+			"rcarriga/nvim-notify",
+			"MunifTanjim/nui.nvim",
+		},
+	})
 
 	use({ "rmagatti/goto-preview" })
 	-- LLM gen model config is not complete
@@ -176,7 +176,7 @@ return packer.startup(function(use)
 	use({ "tpope/vim-fugitive" })
 
 	-- Enable smartyank
-	use({ "ibhagwan/smartyank.nvim"})
+	use({ "ibhagwan/smartyank.nvim" })
 
 	--   use({
 	--   "epwalsh/obsidian.nvim",
@@ -206,7 +206,7 @@ return packer.startup(function(use)
 	-- })
 	-- Automatically set up your configuration after cloning packer.nvim
 	-- Put this at the end after all plugins
-  use {'mistricky/codesnap.nvim', run = 'make'}
+	use({ "mistricky/codesnap.nvim", run = "make" })
 	if PACKER_BOOTSTRAP then
 		require("packer").sync()
 	end
