@@ -179,7 +179,8 @@ return packer.startup(function(use)
   -- install Zen-mode plugin https://github.com/folke/zen-mode.nvim
 
   -- Git related plugins
-  -- use({ "tpope/vim-fugitive" })
+  -- https://www.youtube.com/watch?v=IyBAuDPzdFY
+  use({ "tpope/vim-fugitive" })
 
   -- Enable smartyank
   use({ "ibhagwan/smartyank.nvim" })
