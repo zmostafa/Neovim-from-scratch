@@ -60,7 +60,12 @@ return packer.startup(function(use)
   -- Colorschemes
   use({ "folke/tokyonight.nvim" })
   use({ "lunarvim/darkplus.nvim" })
-
+  use {
+    "craftzdog/solarized-osaka.nvim",
+    lazy = false,
+    priority = 1000,
+    opts = {},
+  }
   -- Cmp
   use({ "hrsh7th/nvim-cmp" })         -- The completion plugin
   use({ "hrsh7th/cmp-buffer" })       -- buffer completions
@@ -174,7 +179,7 @@ return packer.startup(function(use)
   -- install Zen-mode plugin https://github.com/folke/zen-mode.nvim
 
   -- Git related plugins
-  use({ "tpope/vim-fugitive" })
+  -- use({ "tpope/vim-fugitive" })
 
   -- Enable smartyank
   use({ "ibhagwan/smartyank.nvim" })

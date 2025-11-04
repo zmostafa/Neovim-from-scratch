@@ -25,7 +25,7 @@ local function edit_or_open()
 		-- open file
 		tree_api.node.open.edit()
 		-- Close the tree if file was opened
-		tree_api.tree.close()
+		-- tree_api.tree.close()
 	end
 end
 
@@ -54,20 +54,23 @@ local function my_on_attach(bufnr)
 	tree_api.config.mappings.default_on_attach(bufnr)
 
 	-- on_attach
-	vim.keymap.set("n", "l", edit_or_open, opts("Edit Or Open"))
-	vim.keymap.set("n", "L", vsplit_preview, opts("Vsplit Preview"))
-	vim.keymap.set("n", "h", tree_api.tree.close, opts("Close"))
-	vim.keymap.set("n", "H", tree_api.tree.collapse_all, opts("Collapse All"))
+	-- vim.keymap.set("n", "o", edit_or_open, opts("Edit Or Open"))
+	-- vim.keymap.set("n", "v", vsplit_preview, opts("Vsplit Preview"))
+	-- vim.keymap.set("n", "h", tree_api.tree.close, opts("Close"))
+	-- vim.keymap.set("n", "H", tree_api.tree.collapse_all, opts("Collapse All"))
 end
 
 nvim_tree.setup({
-	on_attach = my_on_attach,
+	-- on_attach = my_on_attach,
+  sync_root_with_cwd = true,
 	update_focused_file = {
 		enable = true,
-		update_cwd = true,
+		update_root = {
+      enable = true,
+    },
 	},
 	renderer = {
-		root_folder_modifier = ":t",
+		root_folder_label = ":t",
 		icons = {
 			glyphs = {
 				default = "",
