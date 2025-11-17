@@ -97,7 +97,7 @@ dap.adapters.codelldb = {
   port = "${port}",
   executable = {
     -- CHANGE THIS to your path!
-    command = '/home/zmostafa/Downloads/codelldb-linux-x64/extension/adapter/codelldb',
+    command = 'lldb',
     args = { "--port", "${port}" },
 
     -- On windows you may have to uncomment this:
